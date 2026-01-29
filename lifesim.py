@@ -1,18 +1,20 @@
-#Life Simulator Verson 0.1.1
-
 import random
 
+ #Character Creation
 player_name = input("Enter character name: ").strip().title()
-playergender = input("Enter your Gender: ").strip().title()
+player_gender = input("Enter your Gender: ").strip().title()
 age = 18
 health = random.randint(50, 100)
 wealth = random.randint(1000, 5000)
 happiness = random.randint(50, 100)
 intelligence = random.randint(50, 100)
 life_end = random.randint(90, 110)
+career_prog = 0
+
+#Helper Functions
 
 def print_stats():
-    print(f"Your Stats - Age: {age}, Health: {health}, Wealth: ${wealth}, Happiness: {happiness}, Intelligence: {intelligence}, Gender: {playergender}")
+    print(f"Your Stats - Age: {age}, Health: {health}, Wealth: ${wealth}, Happiness: {happiness}, Intelligence: {intelligence}")
 
 def cap_stats():
     global health, intelligence, happiness, wealth
@@ -21,35 +23,47 @@ def cap_stats():
     happiness = min(max(happiness, 0), 100)
     wealth = max(wealth, 0)
 
+#Action Functions
+
 def work_stats():
-    global wealth, health, happiness, intelligence
+    global wealth, health, happiness, intelligence, career_prog
+    career_prog += random.randint(1, 5)
     wealth += random.randint(10, 100)
-    health -= random.randint(5, 15)
-    happiness -= random.randint(1, 5)
+    health -= random.randint(5, 10)
+    happiness -= random.randint(0, 5)
     intelligence += random.randint(0,2)
     cap_stats()
     print("You worked hard and earned some money.")
+    if career_prog >= 100:
+        wealth += 10000
+        print(f"You’ve been promoted! Enjoy your bonus!")
+        career_prog = 0
 
 def rest_stats():
     global health, happiness
-    health += random.randint(10, 30)
+    health += random.randint(5, 15)
     happiness += random.randint(1, 5)  
     cap_stats()
     print("You took a day for yourself! You feel much better.")
 
 def go_to_dr():
     global health, wealth
-    health += random.randint(50, 80)
-    wealth -= 500
-    cap_stats()
-    print("You went to the Doctor. Your health has improved, but it cost you $500.")
+    if wealth < 500:
+        print("You don't have enough money to go to the Doctor.")
+    else:
+        health += random.randint(50, 80)
+        wealth -= 500
+        cap_stats()
+        print("You went to the Doctor. Your health has improved, but it cost you $500.")
 
 def study():
     global intelligence, happiness
     intelligence += random.randint(25, 40)
-    happiness += random.randint(5, 15)
+    happiness += random.randint(-5, 15)
     cap_stats()
-    print("You studied and increased your intelligence. You now feel better about yourself!")
+    print("You studied and increased your intelligence.")
+
+#Aging Function
 
 def age_stats():
     global health, age, happiness
@@ -58,13 +72,15 @@ def age_stats():
     health -= health_loss
     
     if age >= 50:
-        health -= 10
-        happiness -= random.randint(0, 10)
+        health -= random.randint(-10, -1)
+        happiness -= random.randint(0, 5)
 
         print("Ouch... I'm old.")
 
     cap_stats()
     print("You got older! Happy Birthday!")
+
+#End Game Conditions
 
 def you_died():
     if health <= 0:
@@ -86,6 +102,8 @@ def check_game_over():
         return True
     return False
 
+#Warnings
+
 def warnings():
     if health <= 20:
         print("You are getting very sick. Please take a break or go to the doctor.")
@@ -97,7 +115,6 @@ def warnings():
         print("Your intelligence is low. Please consider studying.")
 
 def critical_warnings():
-    global choice
     if health <= 10:
         print("WARNING!! You are CRITICALLY ill. Visit the doctor IMMEDIATELY!!")
         critical = input("Would you like to go to the Doctor? (Yes/No): ").strip().lower()
@@ -121,17 +138,19 @@ def critical_warnings():
 
     if intelligence <= 10:
         print("Your intelligence is dangerously low. Please, pick up a book or something?")
-        critical = input("Would you like to study? (Yes/No): ")
+        critical = input("Would you like to study? (Yes/No): ").strip().lower()
         if critical == "yes":
             study()
             return True
 
     return False
          
-
+#Game Start
     
 print(f"Welcome {player_name}! Your life begins now...")
-print_stats()
+print(f"You are {player_gender}, {age} years old, with ${wealth}, {health} health, {happiness} happiness, and {intelligence} intelligence. Good luck. Live a good life, my friend!")
+
+#Initial Choice (Education or Career)
 
 while True:
     joborcollege = input("Do you want to go to college or start working? (college/work): ").strip().lower()
@@ -142,16 +161,24 @@ while True:
 if joborcollege == "college":
     print("You chose college. You spend 4 years studying and graduate with a degree!")
     age += 4
-    wealth -= 20000
     intelligence += 20
     happiness += 10
     health -= 15
     cap_stats()
+    print("That was expensive... hope it was worth it?")
+    if wealth < 20000:
+        print("You took student loans to attend college.")
+        wealth = 0
+    elif wealth >= 20000:
+        wealth -= 20000
+
 else:
     print("You chose to work. You gain experience but miss out on college life.")
     wealth += 5000
     happiness -= 5
     cap_stats()
+
+#Main Game Loop
 
 while True:
     if critical_warnings():
